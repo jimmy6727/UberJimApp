@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "19380086141",
+    "firebase_url": "https://uberjim-94f73.firebaseio.com",
+    "project_id": "uberjim-94f73",
+    "storage_bucket": "uberjim-94f73.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:19380086141:android:3dd45006d4ef895c",
+        "android_client_info": {
+          "package_name": "com.example.uberjim"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "19380086141-stm6beeqh7h7lkjj2qf2jss61bhfvc9c.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.uberjim",
+            "certificate_hash": "fb0bf18b55c867171a96214dfe54de0af4cbf215"
+          }
+        },
+        {
+          "client_id": "19380086141-7h6dp364bqpld8m4vuf78sfhn6977lu4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDy_PbuzdItvcGZdmIKxBlxMs9KmKlQB7s"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "19380086141-7h6dp364bqpld8m4vuf78sfhn6977lu4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
