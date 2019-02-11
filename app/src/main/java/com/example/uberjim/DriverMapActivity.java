@@ -187,10 +187,5 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
         }
     }
 
-    private void connectDriver(){
-        checkLocationPermission();
-        mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
-        mMap.setMyLocationEnabled(true);
-    }
 }
 
