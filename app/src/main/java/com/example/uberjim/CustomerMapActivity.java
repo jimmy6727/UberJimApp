@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Canvas;
 import android.location.Location;
 import android.os.Build;
 import android.os.Looper;
@@ -13,8 +14,13 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.firebase.geofire.GeoFire;
@@ -29,7 +35,11 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -44,6 +54,9 @@ public class CustomerMapActivity extends FragmentActivity implements OnMapReadyC
     private FusedLocationProviderClient mFusedLocationClient;
     private Button mLogout;
     private String customerId = "", destination;
+    private RecyclerView recyclerView;
+    private RecyclerView.Adapter mAdapter;
+    private RecyclerView.LayoutManager layoutManager;
 
     private float rideDistance;
 
@@ -74,6 +87,26 @@ public class CustomerMapActivity extends FragmentActivity implements OnMapReadyC
             }
         });
 
+        recyclerView = findViewById(R.id.driver_menu);
+        recyclerView.setHasFixedSize(true);
+
+    }
+
+
+
+
+    public void centerMarkerOnStAndrews(GoogleMap googleMap){
+        mMap = googleMap;
+        LatLng st_andrews = new LatLng(56.3417,-2.7967);
+        mMap.addMarker(new MarkerOptions().position(st_andrews).visible(false));
+        mMap.moveCamera(CameraUpdateFactory.newCameraPosition(CameraPosition.builder().target(st_andrews).zoom(14).build()));
+    }
+
+    public void showDriversAvailable(GoogleMap googleMap){
+        mMap = googleMap;
+        LatLng driver1location = new LatLng(56.341,-2.796);
+        MarkerOptions driver1 = new MarkerOptions().position(driver1location).title("Driver 1");
+        mMap.addMarker(driver1);
     }
 
     @Override
@@ -102,6 +135,7 @@ public class CustomerMapActivity extends FragmentActivity implements OnMapReadyC
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 checkLocationPermission();
+
             } else {
                 checkLocationPermission();
             }
@@ -133,6 +167,8 @@ public class CustomerMapActivity extends FragmentActivity implements OnMapReadyC
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 mMap.setMyLocationEnabled(true);
+                centerMarkerOnStAndrews(mMap);
+                showDriversAvailable(mMap);
             } else {
                 checkLocationPermission();
             }
@@ -211,6 +247,7 @@ public class CustomerMapActivity extends FragmentActivity implements OnMapReadyC
                         assert(Looper.myLooper() != null);
                         //mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
                         mMap.setMyLocationEnabled(true);
+                        centerMarkerOnStAndrews(mMap);
                     }
                 } else {
                     Toast.makeText(getApplicationContext(), "Please provide the permission", Toast.LENGTH_LONG).show();
