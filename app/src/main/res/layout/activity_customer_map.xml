@@ -1,38 +1,154 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:map="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/constraintLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.example.uberjim.CustomerMapActivity">
 
-    <Button
-        android:id="@+id/logout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Logout" />
+    <!--<ScrollView-->
+        <!--android:id="@+id/DriverMenu"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--map:layout_constraintHeight_min="200dp"-->
+        <!--android:layout_marginStart="8dp"-->
+        <!--android:layout_marginEnd="8dp"-->
+        <!--map:layout_constraintBottom_toBottomOf="parent"-->
+        <!--map:layout_constraintEnd_toEndOf="parent"-->
+        <!--map:layout_constraintStart_toStartOf="parent"-->
+        <!--map:layout_constraintTop_toBottomOf="@id/map">-->
+
+        <!--<LinearLayout-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:orientation="vertical">-->
+
+            <!--<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
+                <!--xmlns:tools="http://schemas.android.com/tools"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:orientation="horizontal"-->
+                <!--android:padding="8dp">-->
+
+                <!--<ImageView-->
+                    <!--android:layout_width="50dp"-->
+                    <!--android:layout_height="50dp"-->
+                    <!--tools:src="@tools:sample/avatars[12]" />-->
+
+                <!--<LinearLayout-->
+                    <!--android:layout_width="match_parent"-->
+                    <!--android:layout_height="wrap_content"-->
+                    <!--android:layout_gravity="center"-->
+                    <!--android:orientation="vertical"-->
+                    <!--android:padding="5dp">-->
+
+                    <!--<TextView-->
+                        <!--android:id="@+id/DriverName1"-->
+                        <!--android:layout_width="match_parent"-->
+                        <!--android:layout_height="wrap_content"-->
+                        <!--tools:text='"Test text name 1"' />-->
+
+                    <!--<TextView-->
+                        <!--android:id="@+id/DriverDescription1"-->
+                        <!--android:layout_width="match_parent"-->
+                        <!--android:layout_height="match_parent"-->
+                        <!--tools:text='"Quite a large second line!"' />-->
+                <!--</LinearLayout>-->
+            <!--</LinearLayout>-->
+
+            <!--<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
+                <!--xmlns:tools="http://schemas.android.com/tools"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:orientation="horizontal"-->
+                <!--android:padding="8dp">-->
+
+                <!--<ImageView-->
+                    <!--android:layout_width="50dp"-->
+                    <!--android:layout_height="50dp"-->
+                    <!--tools:src="@tools:sample/avatars[12]" />-->
+
+                <!--<LinearLayout-->
+                    <!--android:layout_width="match_parent"-->
+                    <!--android:layout_height="wrap_content"-->
+                    <!--android:layout_gravity="center"-->
+                    <!--android:orientation="vertical"-->
+                    <!--android:padding="5dp">-->
+
+                    <!--<TextView-->
+                        <!--android:id="@+id/DriverName2"-->
+                        <!--android:layout_width="match_parent"-->
+                        <!--android:layout_height="wrap_content"-->
+                        <!--tools:text='"Test text name 1"' />-->
+
+                    <!--<TextView-->
+                        <!--android:id="@+id/DriverDescription2"-->
+                        <!--android:layout_width="match_parent"-->
+                        <!--android:layout_height="match_parent"-->
+                        <!--tools:text='"Quite a large second line!"' />-->
+                <!--</LinearLayout>-->
+            <!--</LinearLayout>-->
+
+
+        <!--</LinearLayout>-->
+
+    <!--</ScrollView>-->
 
     <fragment
         android:id="@+id/map"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginBottom="200dp" />
+        android:layout_height="0dp"
+        map:layout_constraintBottom_toTopOf="@+id/DriverMenuTitle"
+        map:layout_constraintTop_toTopOf="parent"
+        tools:layout="@layout/activity_map" />
+
+    <Button
+        android:id="@+id/logout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:text="Logout"
+        map:layout_constraintEnd_toEndOf="parent"
+        map:layout_constraintTop_toTopOf="parent" />
 
 
     <Button
         android:id="@+id/request"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
         android:text="Request Trip"
-        android:layout_below="@id/logout"/>
+        map:layout_constraintStart_toStartOf="parent"
+        map:layout_constraintTop_toTopOf="parent" />
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/driver_menu"
+    <android.support.constraint.Guideline
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/map"
-        android:layout_marginTop="-200dp"
-        tools:itemCount="4"
-        tools:listitem="@layout/recycler_view_item_1" />
+        android:id="@+id/SeparatorMapandDriverMenu"
+        android:orientation="horizontal"
+        map:layout_constraintGuide_percent="0.7" />
 
-</RelativeLayout>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        android:text="Available Drivers Shown Below:"
+        android:textSize="20sp"
+        android:textColor="@color/common_google_signin_btn_text_dark_focused"
+        android:id="@+id/DriverMenuTitle"
+        android:background="#e1e1e1"
+        map:layout_constraintTop_toBottomOf="@id/SeparatorMapandDriverMenu"/>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/DriverTestMenu"
+        android:scrollbars="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        map:layout_constraintTop_toBottomOf="@id/DriverMenuTitle"
+        map:layout_constraintBottom_toBottomOf="parent" />
+
+
+
+</android.support.constraint.ConstraintLayout>

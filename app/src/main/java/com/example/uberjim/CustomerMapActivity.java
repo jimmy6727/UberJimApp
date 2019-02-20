@@ -2,14 +2,17 @@ package com.example.uberjim;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Canvas;
+import android.graphics.drawable.Icon;
 import android.location.Location;
 import android.os.Build;
 import android.os.Looper;
 import android.support.annotation.NonNull;
+import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
@@ -20,6 +23,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
+import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -54,11 +63,14 @@ public class CustomerMapActivity extends FragmentActivity implements OnMapReadyC
     private FusedLocationProviderClient mFusedLocationClient;
     private Button mLogout;
     private String customerId = "", destination;
+    private float rideDistance;
+
     private RecyclerView recyclerView;
     private RecyclerView.Adapter mAdapter;
     private RecyclerView.LayoutManager layoutManager;
 
-    private float rideDistance;
+    String[] driver_names =  {"Driver Kevin", "Driver Juan", "Driver Jack", "Driver Evan", "Driver Jimmy", "Driver Emma"};
+    String[] driver_cars = {"Red Nissan Altima", "White Volkswagen Golf", "Black Audi TT300", "Red BMW i8", "Silver Ferrari 458", "Silver Mercedes C800"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,10 +99,146 @@ public class CustomerMapActivity extends FragmentActivity implements OnMapReadyC
             }
         });
 
-        recyclerView = findViewById(R.id.driver_menu);
+        recyclerView = (RecyclerView) findViewById(R.id.DriverTestMenu);
         recyclerView.setHasFixedSize(true);
 
+        // use this setting to improve performance if you know that changes
+        // in content do not change the layout size of the RecyclerView
+        recyclerView.setHasFixedSize(true);
+
+        // use a linear layout manager
+        layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+        recyclerView.setLayoutManager(layoutManager);
+
+        // On Click
+        recyclerView.addOnItemTouchListener(
+                new RecyclerItemClickListener(this, recyclerView ,new RecyclerItemClickListener.OnItemClickListener() {
+                    @Override public void onItemClick(View view, int position) {
+                        Toast.makeText(CustomerMapActivity.this, "Clicked position " + position, 500).show();
+                    }
+
+                    @Override public void onLongItemClick(View view, int position) {
+                        // do whatever
+                    }
+                })
+        );
+
+
+        // specify an adapter (see also next example)
+        mAdapter = new MyAdapter(driver_names);
+        recyclerView.setAdapter(mAdapter);
     }
+
+    //Click Listener Implementation
+    public static class RecyclerItemClickListener implements RecyclerView.OnItemTouchListener {
+        private OnItemClickListener mListener;
+
+        public interface OnItemClickListener {
+            public void onItemClick(View view, int position);
+
+            public void onLongItemClick(View view, int position);
+        }
+
+        GestureDetector mGestureDetector;
+
+        public RecyclerItemClickListener(Context context, final RecyclerView recyclerView, OnItemClickListener listener) {
+            mListener = listener;
+            mGestureDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
+                @Override
+                public boolean onSingleTapUp(MotionEvent e) {
+                    return true;
+                }
+
+                @Override
+                public void onLongPress(MotionEvent e) {
+                    View child = recyclerView.findChildViewUnder(e.getX(), e.getY());
+                    if (child != null && mListener != null) {
+                        mListener.onLongItemClick(child, recyclerView.getChildAdapterPosition(child));
+                    }
+                }
+            });
+        }
+
+        @Override public boolean onInterceptTouchEvent(RecyclerView view, MotionEvent e) {
+            View childView = view.findChildViewUnder(e.getX(), e.getY());
+            if (childView != null && mListener != null && mGestureDetector.onTouchEvent(e)) {
+                mListener.onItemClick(childView, view.getChildAdapterPosition(childView));
+                return true;
+            }
+            return false;
+        }
+
+        @Override public void onTouchEvent(RecyclerView view, MotionEvent motionEvent) { }
+
+        @Override
+        public void onRequestDisallowInterceptTouchEvent (boolean disallowIntercept){}
+    }
+
+    public class MyAdapter extends RecyclerView.Adapter<MyAdapter.myExtendedViewHolder> {
+        private String[] mDataset;
+
+        // Provide a reference to the views for each data item
+        // Complex data items may need more than one view per item, and
+        // you provide access to all the views for a data item in a view holder
+        public class MyViewHolder extends RecyclerView.ViewHolder {
+            // each data item is just a string in this case
+            public LinearLayout myLinearLayout;
+            public MyViewHolder(LinearLayout v) {
+                super(v);
+                myLinearLayout = v;
+            }
+        }
+
+        // Provide a suitable constructor (depends on the kind of dataset)
+        public MyAdapter(String[] myDataset) {
+            mDataset = myDataset;
+        }
+
+        // Create new views (invoked by the layout manager)
+        @Override
+        public MyAdapter.myExtendedViewHolder onCreateViewHolder(ViewGroup parent,
+                                                         int viewType) {
+            // create a new view
+            LinearLayout v = (LinearLayout) LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.recycler_view_item_1, parent, false);
+            myExtendedViewHolder vh = new myExtendedViewHolder(v);
+            return vh;
+        }
+
+        public class myExtendedViewHolder extends RecyclerView.ViewHolder
+        {
+            TextView driver_name;
+            TextView driver_description;
+            ImageView driver_image;
+
+            public myExtendedViewHolder(View itemView)
+            {
+                super(itemView);
+                driver_image = itemView.findViewById(R.id.driver_profile_pic);
+                driver_name = itemView.findViewById(R.id.DriverNametextView1);
+                driver_description = itemView.findViewById(R.id.DriverDescriptiontextView2);
+            }
+        }
+        // Replace the contents of a view (invoked by the layout manager)
+        @Override
+        public void onBindViewHolder(myExtendedViewHolder holder, int position) {
+            // - get element from your dataset at this position
+            // - replace the contents of the view with that element
+                holder.driver_name.setText(driver_names[position]);
+                holder.driver_description.setText(driver_cars[position]);
+                holder.driver_image.setImageResource(R.drawable.ic_local_taxi_black_24dp);
+        }
+
+        // Return the size of your dataset (invoked by the layout manager)
+        @Override
+        public int getItemCount() {
+            return mDataset.length;
+        }
+
+    }
+
+
+
 
 
 
@@ -98,7 +246,7 @@ public class CustomerMapActivity extends FragmentActivity implements OnMapReadyC
     public void centerMarkerOnStAndrews(GoogleMap googleMap){
         mMap = googleMap;
         LatLng st_andrews = new LatLng(56.3417,-2.7967);
-        mMap.addMarker(new MarkerOptions().position(st_andrews).visible(false));
+        mMap.addMarker(new MarkerOptions().position(st_andrews).visible(true));
         mMap.moveCamera(CameraUpdateFactory.newCameraPosition(CameraPosition.builder().target(st_andrews).zoom(14).build()));
     }
 
