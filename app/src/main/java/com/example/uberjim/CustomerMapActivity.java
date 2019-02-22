@@ -2,24 +2,34 @@ package com.example.uberjim;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
 import android.location.Location;
+import android.os.AsyncTask;
 import android.os.Build;
+import android.os.Handler;
 import android.os.Looper;
+import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -50,10 +60,29 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.sql.Driver;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
 
 public class CustomerMapActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -62,8 +91,14 @@ public class CustomerMapActivity extends FragmentActivity implements OnMapReadyC
     private LocationRequest mLocationRequest;
     private FusedLocationProviderClient mFusedLocationClient;
     private Button mLogout;
-    private String customerId = "", destination;
+    private Button mRequestTrip;
+    private String customerId = "";
+    private Button mTripConfirm;
     private float rideDistance;
+    private double mLatitudeLabel;
+    private double mLongitudeLabel;
+    private Marker destinationMarker;
+    ArrayList mMarkerPoints;
 
     private RecyclerView recyclerView;
     private RecyclerView.Adapter mAdapter;
@@ -71,11 +106,14 @@ public class CustomerMapActivity extends FragmentActivity implements OnMapReadyC
 
     String[] driver_names =  {"Driver Kevin", "Driver Juan", "Driver Jack", "Driver Evan", "Driver Jimmy", "Driver Emma"};
     String[] driver_cars = {"Red Nissan Altima", "White Volkswagen Golf", "Black Audi TT300", "Red BMW i8", "Silver Ferrari 458", "Silver Mercedes C800"};
+    LatLng[] driver_locations = {new LatLng (56.338,-2.796), new LatLng (56.342,-2.793), new LatLng (56.340,-2.792), new LatLng (56.339,-2.790), new LatLng (56.339,-2.796), new LatLng (56.337,-2.797), };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_customer_map);
+        // Define Location Client
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -86,6 +124,7 @@ public class CustomerMapActivity extends FragmentActivity implements OnMapReadyC
             return;
         }
 
+        // Logout Button logic
         mLogout = (Button) findViewById(R.id.logout);
 
         mLogout.setOnClickListener(new View.OnClickListener() {
@@ -99,22 +138,82 @@ public class CustomerMapActivity extends FragmentActivity implements OnMapReadyC
             }
         });
 
-        recyclerView = (RecyclerView) findViewById(R.id.DriverTestMenu);
-        recyclerView.setHasFixedSize(true);
+        // Request Trip Button and Confirm Trip Button
+        mRequestTrip = (Button) findViewById(R.id.request);
+        mTripConfirm = (Button) findViewById(R.id.ConfirmTrip);
 
-        // use this setting to improve performance if you know that changes
-        // in content do not change the layout size of the RecyclerView
+        mRequestTrip.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(CustomerMapActivity.this, "" +
+                        "Hold and drag the marker to destination",Toast.LENGTH_LONG).show();
+                destinationMarker = mMap.addMarker(new MarkerOptions().title("Hold and drag to destination").position(new LatLng (56.340,-2.8)));
+                destinationMarker.setDraggable(true);
+
+                mTripConfirm.setVisibility(View.VISIBLE);
+            }
+        });
+        // Initializing
+        mMarkerPoints = new ArrayList();
+
+        mTripConfirm.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                getLastLocation();
+                FragmentManager fm = getSupportFragmentManager();
+                    mMarkerPoints.clear();
+                    LatLng startPoint = new LatLng(mLatitudeLabel, mLongitudeLabel);
+                    drawMarker(startPoint);
+                    final LatLng dest = new LatLng(destinationMarker.getPosition().latitude, destinationMarker.getPosition().longitude);
+
+
+                drawMarker(dest);
+                mMarkerPoints.add(0, startPoint);
+                mMarkerPoints.add(1, dest);
+
+                final String[] mDriver = get_closest_driver(driver_names, driver_cars, driver_locations);
+                String mDriver_name_ = new String();
+                String mDriver_car_ = new String();
+
+                final ProgressDialog progress = new ProgressDialog(CustomerMapActivity.this);
+                progress.setTitle("Routing and Contacting Driver");
+                progress.setMessage(mDriver[0] + " is the closest driver to you.");
+                progress.setCancelable(false); // disable dismiss by tapping outside of the dialog
+                progress.show();
+                // Wait 1 second to simulate routing
+                final Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        progress.dismiss();
+                        Intent intent = new Intent(CustomerMapActivity.this, DriverWaitingActivity.class);
+                        Bundle DriverData = new Bundle();
+                        DriverData.putString("mDriver_name_", mDriver[0]);
+                        DriverData.putString("mDriver_car_", mDriver[1]);
+                        DriverData.putFloat("CurrentLatitude", convertToFloat(mLatitudeLabel));
+                        DriverData.putFloat("CurrentLongitude", convertToFloat(mLongitudeLabel));
+                        DriverData.putFloat("DestLatitude", convertToFloat(dest.latitude));
+                        DriverData.putFloat("DestLongitude", convertToFloat(dest.longitude));
+                        intent.putExtras(DriverData);
+                        startActivity(intent);
+                    }
+                }, 3000);
+            }
+        });
+
+
+        recyclerView = (RecyclerView) findViewById(R.id.DriverTestMenu);
         recyclerView.setHasFixedSize(true);
 
         // use a linear layout manager
         layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         recyclerView.setLayoutManager(layoutManager);
 
-        // On Click
+        // Handles the event when the user clicks one of the driver names.
         recyclerView.addOnItemTouchListener(
                 new RecyclerItemClickListener(this, recyclerView ,new RecyclerItemClickListener.OnItemClickListener() {
                     @Override public void onItemClick(View view, int position) {
-                        Toast.makeText(CustomerMapActivity.this, "Clicked position " + position, 500).show();
+
                     }
 
                     @Override public void onLongItemClick(View view, int position) {
@@ -122,21 +221,46 @@ public class CustomerMapActivity extends FragmentActivity implements OnMapReadyC
                     }
                 })
         );
-
-
-        // specify an adapter (see also next example)
+        // specify an adapter for recyclerView that is the driver menu
         mAdapter = new MyAdapter(driver_names);
         recyclerView.setAdapter(mAdapter);
     }
 
-    //Click Listener Implementation
+    public static Float convertToFloat(double doubleValue) {
+        return (float) doubleValue;
+    }
+
+    private void drawMarker(LatLng point){
+        mMarkerPoints.add(point);
+
+// Creating MarkerOptions
+        MarkerOptions options = new MarkerOptions();
+
+// Setting the position of the marker
+        options.position(point);
+
+/**
+ * For the start location, the color of marker is GREEN and
+ * for the end location, the color of marker is RED.
+ */
+        if(mMarkerPoints.size()==1){
+            options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+        }else if(mMarkerPoints.size()==2){
+            options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+        }
+
+// Add new marker to the Google Map Android API V2
+        mMap.addMarker(options);
+    }
+
+
+    //Click Listener Implementation for driver menu
     public static class RecyclerItemClickListener implements RecyclerView.OnItemTouchListener {
         private OnItemClickListener mListener;
 
         public interface OnItemClickListener {
-            public void onItemClick(View view, int position);
-
-            public void onLongItemClick(View view, int position);
+            void onItemClick(View view, int position);
+            void onLongItemClick(View view, int position);
         }
 
         GestureDetector mGestureDetector;
@@ -238,23 +362,80 @@ public class CustomerMapActivity extends FragmentActivity implements OnMapReadyC
     }
 
 
+    // Function to get last location
+    private void getLastLocation() {
+        mFusedLocationClient.getLastLocation()
+                .addOnCompleteListener(this, new OnCompleteListener<Location>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Location> task) {
+                        if (task.isSuccessful() && task.getResult() != null) {
+                            mLastLocation = task.getResult();
+                            mLatitudeLabel = mLastLocation.getLatitude();
+                            mLongitudeLabel = mLastLocation.getLongitude();
+                        }
+                    }
+                });
+    }
+
+    private float get_distance(double lat_a, double lng_a, double lat_b, double lng_b )
+    {
+        double earthRadius = 3958.75;
+        double latDiff = Math.toRadians(lat_b - lat_a);
+        double lngDiff = Math.toRadians(lng_b - lng_a);
+        double a = Math.sin(latDiff / 2) * Math.sin(latDiff / 2) +
+                Math.cos(Math.toRadians(lat_a)) * Math.cos(Math.toRadians(lat_b)) *
+                        Math.sin(lngDiff / 2) * Math.sin(lngDiff / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        double distance = earthRadius * c;
+
+        int meterConversion = 1609;
+
+        return new Float(distance * meterConversion).floatValue();
+    }
+
+    // Function to calculate closest driver
+    private String[] get_closest_driver(String[] pdriver_names, String[] pdriver_cars, LatLng[] pdriver_locations) {
+
+        float shortest = 1000000; //A huge number to start with
+        int indx = 0;
+        for(int i = 0; i<pdriver_names.length; i++){
+            float dis = get_distance(pdriver_locations[i].latitude, pdriver_locations[i].longitude, mLatitudeLabel, mLongitudeLabel);
+            if(dis < shortest){
+                shortest = dis;
+                indx=i;
+            }
+        }
+        String[] driver_info;
+        driver_info = new String[]{pdriver_names[indx], pdriver_cars[indx]};
+        return driver_info;
+    }
 
 
-
-
-
-    public void centerMarkerOnStAndrews(GoogleMap googleMap){
+    public void centerMapOnCurrentLocation(GoogleMap googleMap){
         mMap = googleMap;
-        LatLng st_andrews = new LatLng(56.3417,-2.7967);
-        mMap.addMarker(new MarkerOptions().position(st_andrews).visible(true));
-        mMap.moveCamera(CameraUpdateFactory.newCameraPosition(CameraPosition.builder().target(st_andrews).zoom(14).build()));
+        getLastLocation();
+        LatLng myLocation = new LatLng(mLatitudeLabel,mLongitudeLabel);
+        mMap.addMarker(new MarkerOptions().position(myLocation).visible(false));
+        mMap.moveCamera(CameraUpdateFactory.newCameraPosition(CameraPosition.builder().target(myLocation).zoom(14).build()));
+    }
+
+    private BitmapDescriptor bitmapDescriptorFromVector(Context context, @DrawableRes int vectorDrawableResourceId) {
+        Drawable background = ContextCompat.getDrawable(context, R.drawable.ic_local_taxi_black_24dp);
+        background.setBounds(0, 0, background.getIntrinsicWidth(), background.getIntrinsicHeight());
+        Drawable vectorDrawable = ContextCompat.getDrawable(context, vectorDrawableResourceId);
+        vectorDrawable.setBounds(40, 20, vectorDrawable.getIntrinsicWidth() + 40, vectorDrawable.getIntrinsicHeight() + 20);
+        Bitmap bitmap = Bitmap.createBitmap(background.getIntrinsicWidth(), background.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        background.draw(canvas);
+        vectorDrawable.draw(canvas);
+        return BitmapDescriptorFactory.fromBitmap(bitmap);
     }
 
     public void showDriversAvailable(GoogleMap googleMap){
         mMap = googleMap;
-        LatLng driver1location = new LatLng(56.341,-2.796);
-        MarkerOptions driver1 = new MarkerOptions().position(driver1location).title("Driver 1");
-        mMap.addMarker(driver1);
+        for(int position = 0; position < driver_names.length; position = position+1){
+            mMap.addMarker(new MarkerOptions().position(driver_locations[position]).title(driver_names[position]).icon(bitmapDescriptorFromVector(this, R.drawable.ic_local_taxi_black_24dp)));
+        }
     }
 
     @Override
@@ -306,6 +487,24 @@ public class CustomerMapActivity extends FragmentActivity implements OnMapReadyC
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        mMap.setOnMarkerDragListener(new GoogleMap.OnMarkerDragListener() {
+
+            @Override
+            public void onMarkerDragStart(Marker marker) {
+
+            }
+
+            @Override
+            public void onMarkerDragEnd(Marker marker) {
+                LatLng pos = marker.getPosition();
+                marker.setPosition(pos);
+            }
+
+            @Override
+            public void onMarkerDrag(Marker marker) {
+
+            }
+        });
 
         mLocationRequest = new LocationRequest();
         mLocationRequest.setInterval(1000);
@@ -315,7 +514,9 @@ public class CustomerMapActivity extends FragmentActivity implements OnMapReadyC
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 mMap.setMyLocationEnabled(true);
-                centerMarkerOnStAndrews(mMap);
+                getLastLocation();
+                centerMapOnCurrentLocation(mMap);
+                mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng (56.337,-2.797)));
                 showDriversAvailable(mMap);
             } else {
                 checkLocationPermission();
@@ -340,24 +541,6 @@ public class CustomerMapActivity extends FragmentActivity implements OnMapReadyC
                     mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
                     mMap.animateCamera(CameraUpdateFactory.zoomTo(12));
 
-
-//                    String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-//                    DatabaseReference refAvailable = FirebaseDatabase.getInstance().getReference("driversAvailable");
-//                    DatabaseReference refWorking = FirebaseDatabase.getInstance().getReference("driversWorking");
-//                    GeoFire geoFireAvailable = new GeoFire(refAvailable);
-//                    GeoFire geoFireWorking = new GeoFire(refWorking);
-//
-//                    switch (customerId) {
-//                        case "":
-//                            geoFireWorking.removeLocation(userId);
-//                            geoFireAvailable.setLocation(userId, new GeoLocation(location.getLatitude(), location.getLongitude()));
-//                            break;
-//
-//                        default:
-//                            geoFireAvailable.removeLocation(userId);
-//                            geoFireWorking.setLocation(userId, new GeoLocation(location.getLatitude(), location.getLongitude()));
-//                            break;
-//                    }
                 }
             }
         }
@@ -395,7 +578,8 @@ public class CustomerMapActivity extends FragmentActivity implements OnMapReadyC
                         assert(Looper.myLooper() != null);
                         //mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
                         mMap.setMyLocationEnabled(true);
-                        centerMarkerOnStAndrews(mMap);
+                        getLastLocation();
+                        centerMapOnCurrentLocation(mMap);
                     }
                 } else {
                     Toast.makeText(getApplicationContext(), "Please provide the permission", Toast.LENGTH_LONG).show();

@@ -6,94 +6,6 @@
     android:layout_height="match_parent"
     tools:context="com.example.uberjim.CustomerMapActivity">
 
-    <!--<ScrollView-->
-        <!--android:id="@+id/DriverMenu"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--map:layout_constraintHeight_min="200dp"-->
-        <!--android:layout_marginStart="8dp"-->
-        <!--android:layout_marginEnd="8dp"-->
-        <!--map:layout_constraintBottom_toBottomOf="parent"-->
-        <!--map:layout_constraintEnd_toEndOf="parent"-->
-        <!--map:layout_constraintStart_toStartOf="parent"-->
-        <!--map:layout_constraintTop_toBottomOf="@id/map">-->
-
-        <!--<LinearLayout-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:orientation="vertical">-->
-
-            <!--<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
-                <!--xmlns:tools="http://schemas.android.com/tools"-->
-                <!--android:layout_width="match_parent"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:orientation="horizontal"-->
-                <!--android:padding="8dp">-->
-
-                <!--<ImageView-->
-                    <!--android:layout_width="50dp"-->
-                    <!--android:layout_height="50dp"-->
-                    <!--tools:src="@tools:sample/avatars[12]" />-->
-
-                <!--<LinearLayout-->
-                    <!--android:layout_width="match_parent"-->
-                    <!--android:layout_height="wrap_content"-->
-                    <!--android:layout_gravity="center"-->
-                    <!--android:orientation="vertical"-->
-                    <!--android:padding="5dp">-->
-
-                    <!--<TextView-->
-                        <!--android:id="@+id/DriverName1"-->
-                        <!--android:layout_width="match_parent"-->
-                        <!--android:layout_height="wrap_content"-->
-                        <!--tools:text='"Test text name 1"' />-->
-
-                    <!--<TextView-->
-                        <!--android:id="@+id/DriverDescription1"-->
-                        <!--android:layout_width="match_parent"-->
-                        <!--android:layout_height="match_parent"-->
-                        <!--tools:text='"Quite a large second line!"' />-->
-                <!--</LinearLayout>-->
-            <!--</LinearLayout>-->
-
-            <!--<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
-                <!--xmlns:tools="http://schemas.android.com/tools"-->
-                <!--android:layout_width="match_parent"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:orientation="horizontal"-->
-                <!--android:padding="8dp">-->
-
-                <!--<ImageView-->
-                    <!--android:layout_width="50dp"-->
-                    <!--android:layout_height="50dp"-->
-                    <!--tools:src="@tools:sample/avatars[12]" />-->
-
-                <!--<LinearLayout-->
-                    <!--android:layout_width="match_parent"-->
-                    <!--android:layout_height="wrap_content"-->
-                    <!--android:layout_gravity="center"-->
-                    <!--android:orientation="vertical"-->
-                    <!--android:padding="5dp">-->
-
-                    <!--<TextView-->
-                        <!--android:id="@+id/DriverName2"-->
-                        <!--android:layout_width="match_parent"-->
-                        <!--android:layout_height="wrap_content"-->
-                        <!--tools:text='"Test text name 1"' />-->
-
-                    <!--<TextView-->
-                        <!--android:id="@+id/DriverDescription2"-->
-                        <!--android:layout_width="match_parent"-->
-                        <!--android:layout_height="match_parent"-->
-                        <!--tools:text='"Quite a large second line!"' />-->
-                <!--</LinearLayout>-->
-            <!--</LinearLayout>-->
-
-
-        <!--</LinearLayout>-->
-
-    <!--</ScrollView>-->
-
     <fragment
         android:id="@+id/map"
         android:name="com.google.android.gms.maps.SupportMapFragment"
@@ -107,7 +19,7 @@
         android:id="@+id/logout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="56dp"
         android:layout_marginEnd="8dp"
         android:text="Logout"
         map:layout_constraintEnd_toEndOf="parent"
@@ -149,6 +61,18 @@
         map:layout_constraintTop_toBottomOf="@id/DriverMenuTitle"
         map:layout_constraintBottom_toBottomOf="parent" />
 
+    <Button
+        android:id="@+id/ConfirmTrip"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:text="Confirm Destination and Request Driver"
+        android:visibility="invisible"
+        map:layout_constraintBottom_toTopOf="@+id/DriverMenuTitle"
+        map:layout_constraintEnd_toEndOf="parent"
+        map:layout_constraintStart_toStartOf="parent" />
 
 
 </android.support.constraint.ConstraintLayout>
