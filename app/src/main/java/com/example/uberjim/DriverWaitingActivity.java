@@ -1,8 +1,15 @@
 package com.example.uberjim;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.graphics.Color;
+import android.net.Uri;
 import android.os.Handler;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -19,6 +26,7 @@ public class DriverWaitingActivity extends AppCompatActivity {
 
     public TextView mDriver_Name;
     public TextView mDriver_Car;
+    public TextView mHeader;
     public ImageView mDriver_ProfilePic;
     public String mDriver_name;
     public String mDriver_car;
@@ -34,6 +42,7 @@ public class DriverWaitingActivity extends AppCompatActivity {
     public Button mETAButton;
     public Button mCancelTripButton;
     public Button mSimulateTrip;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,25 +68,19 @@ public class DriverWaitingActivity extends AppCompatActivity {
             destLat = extras_from_CustomerMap.getFloat("DestLatitude");
             destLong = extras_from_CustomerMap.getFloat("DestLatitude");
         }
+
+        mHeader = findViewById(R.id.textView);
+        mHeader.setText(mDriver_name+" is on their way to pick you up!");
+
         mDriver_ProfilePic = findViewById(R.id.DriverProfPic);
         mDriver_ProfilePic.setImageResource(R.drawable.ic_person_black_24dp);
         mContactDriverButton = (Button) findViewById(R.id.contactDriver);
         mContactDriverButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                final ProgressDialog progress = new ProgressDialog(DriverWaitingActivity.this);
-                progress.setTitle("Contacting Driver");
-                progress.setMessage("This is a simulated button :)");
-                progress.setCancelable(false); // disable dismiss by tapping outside of the dialog
-                progress.show();
-                // Wait 1 second to simulate routing
-                final Handler handler = new Handler();
-                handler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        progress.dismiss();
-                    }
-                }, 2000);
+                Intent callIntent = new Intent(Intent.ACTION_DIAL);
+                callIntent.setData(Uri.parse("tel:07769561610"));
+                startActivity(callIntent);
             }
         });
 
@@ -149,6 +152,10 @@ public class DriverWaitingActivity extends AppCompatActivity {
         mSimulateTrip.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+//                // Send notification
+//                createNotificationChannel();
+//                sendNotification();
+
                 final ProgressDialog progress = new ProgressDialog(DriverWaitingActivity.this);
                 progress.setTitle("Simulating trip");
                 progress.setMessage("Since this is a pseudo-app... Have you ever been in a car that drives this fast!?");
@@ -170,7 +177,10 @@ public class DriverWaitingActivity extends AppCompatActivity {
                 }, 2000);
             }
         });
+
     }
+
+
     private String get_distance(float lat_a, float lng_a, float lat_b, float lng_b )
     {
         double earthRadius = 3958.75;
