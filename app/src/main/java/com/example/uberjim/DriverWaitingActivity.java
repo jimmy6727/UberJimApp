@@ -90,7 +90,7 @@ public class DriverWaitingActivity extends AppCompatActivity {
             public void onClick(View v) {
                 final ProgressDialog progress = new ProgressDialog(DriverWaitingActivity.this);
                 progress.setTitle("Calculating Fare");
-                progress.setMessage("Has anyone told you how good you look today?");
+                progress.setMessage("UberJim saves you money, which makes you happy");
                 progress.setCancelable(false); // disable dismiss by tapping outside of the dialog
                 progress.show();
                 // Wait 1 second to simulate routing
@@ -111,7 +111,7 @@ public class DriverWaitingActivity extends AppCompatActivity {
             public void onClick(View v) {
                 final ProgressDialog progress = new ProgressDialog(DriverWaitingActivity.this);
                 progress.setTitle("Calculating ETA");
-                progress.setMessage("Has anyone told you how good you look today?");
+                progress.setMessage("UberJim saves you time, which makes you happy");
                 progress.setCancelable(false); // disable dismiss by tapping outside of the dialog
                 progress.show();
                 // Wait 1 second to simulate routing
@@ -158,7 +158,7 @@ public class DriverWaitingActivity extends AppCompatActivity {
 
                 final ProgressDialog progress = new ProgressDialog(DriverWaitingActivity.this);
                 progress.setTitle("Simulating trip");
-                progress.setMessage("Since this is a pseudo-app... Have you ever been in a car that drives this fast!?");
+                progress.setMessage("Have you ever been in a car that drives this fast!?");
                 progress.setCancelable(false); // disable dismiss by tapping outside of the dialog
                 progress.show();
                 // Wait 1 second to simulate routing

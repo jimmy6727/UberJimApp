@@ -94,10 +94,11 @@ public class CustomerMapActivity extends FragmentActivity implements OnMapReadyC
     private Button mRequestTrip;
     private String customerId = "";
     private Button mTripConfirm;
-    private float rideDistance;
     private double mLatitudeLabel;
     private double mLongitudeLabel;
     private Marker destinationMarker;
+    private float rideDistance;
+    private Marker pickupMarker;
     ArrayList mMarkerPoints;
 
     private RecyclerView recyclerView;
@@ -149,7 +150,9 @@ public class CustomerMapActivity extends FragmentActivity implements OnMapReadyC
                         "Hold and drag the marker to destination",Toast.LENGTH_LONG).show();
                 destinationMarker = mMap.addMarker(new MarkerOptions().title("Hold and drag to destination").position(new LatLng (56.340,-2.8)));
                 destinationMarker.setDraggable(true);
-
+                pickupMarker = mMap.addMarker(new MarkerOptions().title("Hold and drag to pickup location")
+                        .position(new LatLng(mLatitudeLabel, mLongitudeLabel))
+                        .draggable(true));
                 mTripConfirm.setVisibility(View.VISIBLE);
             }
         });
@@ -163,7 +166,7 @@ public class CustomerMapActivity extends FragmentActivity implements OnMapReadyC
                 FragmentManager fm = getSupportFragmentManager();
                     mMarkerPoints.clear();
                     LatLng startPoint = new LatLng(mLatitudeLabel, mLongitudeLabel);
-                    drawMarker(startPoint);
+                    // drawMarker(startPoint);
                     final LatLng dest = new LatLng(destinationMarker.getPosition().latitude, destinationMarker.getPosition().longitude);
 
 
@@ -410,7 +413,7 @@ public class CustomerMapActivity extends FragmentActivity implements OnMapReadyC
         return driver_info;
     }
 
-
+    // Function to center map on current location
     public void centerMapOnCurrentLocation(GoogleMap googleMap){
         mMap = googleMap;
         getLastLocation();
@@ -431,6 +434,7 @@ public class CustomerMapActivity extends FragmentActivity implements OnMapReadyC
         return BitmapDescriptorFactory.fromBitmap(bitmap);
     }
 
+    // Shows all drivers on map
     public void showDriversAvailable(GoogleMap googleMap){
         mMap = googleMap;
         for(int position = 0; position < driver_names.length; position = position+1){

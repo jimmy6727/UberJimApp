@@ -25,6 +25,6 @@
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="registration"
+        android:text="Sign Up"
         android:id="@+id/registration"/>
 </LinearLayout>
